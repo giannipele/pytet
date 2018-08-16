@@ -94,20 +94,25 @@ class RnnTET:
         if tetstr != "":
             self.parse_tet_str(tetstr, 0)
     
-    def parse_tet_str(self, tetstr, index):
-        tetstr.strip()
-        tetstr.replace(' ','')
+    def parse_tet_str(self, tetstr, index=0):
+        #print("INDEX: {}".format(index))
+        #tetstr = tetstr.strip()
+        tetstr = tetstr.replace(' ','')
+        #print(tetstr[index:] + "\n")
         if tetstr[index] != '{':
+            #print("String: {}, Index:{}".format(tetstr,index))
             raise Exception("Malformed string. Expected '{', found '{0}' at position {1}".format(tetstr[index], index))
         
         index += 1
         substr, index = next_token(tetstr, '{', index) 
         if substr != "NODE":
+            #print("String: {}, Index:{}".format(tetstr,index))
             raise Exception("Malformed string. Expected 'NODE', found '{0}'".format(substr))
         
         index += 1
         substr, index = next_token(tetstr, '(', index) 
         if substr != "FUNCTION":
+            #print("String: {}, Index:{}".format(tetstr,index))
             raise Exception("Malformed string. Expected 'FUNCTION', found '{0}'".format(substr))
        
         index += 1
@@ -117,6 +122,7 @@ class RnnTET:
         index += 3
         substr, index = next_token(tetstr, '(', index)
         if substr != "TYPE":
+            #print("String: {}, Index:{}".format(tetstr,index))
             raise Exception("Malformed string. Expected 'TYPE', found '{0}'".format(substr))
 
         index += 1
@@ -129,18 +135,38 @@ class RnnTET:
                 index += 1
                 substr, index = next_token(tetstr, '(', index)
                 if substr != "CHILD":
+                    #print("String: {}, Index:{}".format(tetstr,index))
                     raise Exception("Malformed string. Expected 'CHILD', found '{0}'".format(substr))
 
                 substr, index = next_token(tetstr, ')', index + 1)
                 child = RnnTET()
                 index = child.parse_tet_str(tetstr, index + 1)
+                self.children.append(child)
             index += 2 
         return index
-        
-            
+    
+    def print_tet(self, indent=0):
+        prefix = "\t" * indent
+        print("\t"*indent + "{NODE")
+        #indent += 1
+        print("\t"*(indent+1) + "FUNCTION: {}, {}".format(self.fun, self.params))
+        print("\t"*(indent+1) + "TYPE: {}".format(self.type))
+        print("\t"*(indent+1) + "CHILDREN [")
+        for c in self.children:
+            c.print_tet(indent + 2)
+
+        print("\t"*(indent+1) + "]")
+        print("\t"*indent + "}")
+
 
 value = TETValue()
 index = 0
 index = value.parse_value("(T,[(T,[T:4]):3,(T,[T:2]):1],[(T,[]):1,(T,[T:8]):6])", 0)
-print("Index: {}".format(index))
-print("Number of nodes: {}".format(value.count_nodes()))
+#print("Index: {}".format(index))
+#print("Number of nodes: {}".format(value.count_nodes()))
+tet = RnnTET ("{NODE {FUNCTION (logistic,-75,10)}{TYPE ()}}")
+try:
+    print(tet.parse_tet_str("{NODE {FUNCTION (logistic,-75,10)}{TYPE ()}{CHILD (paper0) {NODE {FUNCTION (logistic,-75,10)}{TYPE (author_paper(author0,paper0))}{CHILD (paper1) {NODE {FUNCTION (identity)}{TYPE (paper_paper(paper1,paper0))}}}}}}", 0))
+except Exception as e:
+    print(e)
+tet.print_tet()

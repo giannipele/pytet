@@ -17,7 +17,9 @@ class TestTETReading(unittest.TestCase):
         #self.assertEqual(next_token('123', ')'), ('123',2))
         node = RnnTET()
         self.assertEqual(node.parse_tet_str(
-           "{NODE {FUNCTION (logistic,-75,10)}{TYPE ()}{CHILD (paper0) {NODE {FUNCTION (logistic,-75,10)}{TYPE (author_paper(author0,paper0))}{CHILD (paper1) {NODE {FUNCTION (identity)}{TYPE (paper_paper(paper1,paper0))}}}}}}", 351))
+            "{NODE {FUNCTION (logistic,-75,10)}{TYPE ()}}",0), 40)
+        self.assertEqual(node.parse_tet_str(
+           "{NODE {FUNCTION (logistic,-75,10)}{TYPE ()}{CHILD (paper0) {NODE {FUNCTION (logistic,-75,10)}{TYPE (author_paper(author0,paper0))}{CHILD (paper1) {NODE {FUNCTION (identity)}{TYPE (paper_paper(paper1,paper0))}}}}}}", 0), 199)
 
 if __name__=='__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(TestTETReading)
