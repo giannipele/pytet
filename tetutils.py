@@ -25,7 +25,7 @@ def parse_function(string):
     return s_split[0], params
 
 
-class TETValue:
+class TetValue:
     def __init__(self, valuestr=""):
         self.multisets = []
         if valuestr != "":
@@ -39,7 +39,7 @@ class TETValue:
                 #print("Top: {}".format(index))
                 index += 1
                 while valuestr[index] != ')':
-                    multiset = TETMultiset()
+                    multiset = TetMultiset()
                     index = multiset.parse_multiset_str(valuestr, index + 1)
                     self.multisets.append(multiset)
                 return index + 1
@@ -59,7 +59,7 @@ class TETValue:
                 count += sub_nodes * e[1]
         return count
 
-class TETMultiset:
+class TetMultiset:
     def __init__(self, valuestr=""):
         self.elements = []
 
@@ -69,7 +69,7 @@ class TETMultiset:
                 raise Exception("Malformed string. Expected '[', found '{0}' at position {1}".format(valuestr[index], index))
             while valuestr[index] != ']':
                 #print("Multiset idx: {}".format(index))
-                value = TETValue()
+                value = TetValue()
                 index = value.parse_value(valuestr, index + 1)
                 if valuestr[index] == ']':
                     break
@@ -87,7 +87,7 @@ class TETMultiset:
         except Exception as e:
             print('Exception: {}'.format(e))
 
-class RnnTET:
+class RnnTet:
     def __init__(self, tetstr=""):
         self.type = ""
         self.children = []
@@ -139,7 +139,7 @@ class RnnTET:
                     raise Exception("Malformed string. Expected 'CHILD', found '{0}'".format(substr))
 
                 substr, index = next_token(tetstr, ')', index + 1)
-                child = RnnTET()
+                child = RnnTet()
                 index = child.parse_tet_str(tetstr, index + 1)
                 self.children.append(child)
             index += 2 
@@ -159,14 +159,16 @@ class RnnTET:
         print("\t"*indent + "}")
 
 
-value = TETValue()
+value = TetValue()
 index = 0
 index = value.parse_value("(T,[(T,[T:4]):3,(T,[T:2]):1],[(T,[]):1,(T,[T:8]):6])", 0)
 #print("Index: {}".format(index))
 #print("Number of nodes: {}".format(value.count_nodes()))
-tet = RnnTET ("{NODE {FUNCTION (logistic,-75,10)}{TYPE ()}}")
+tet = RnnTet ("{NODE {FUNCTION (logistic,-75,10)}{TYPE ()}}")
 try:
     print(tet.parse_tet_str("{NODE {FUNCTION (logistic,-75,10)}{TYPE ()}{CHILD (paper0) {NODE {FUNCTION (logistic,-75,10)}{TYPE (author_paper(author0,paper0))}{CHILD (paper1) {NODE {FUNCTION (identity)}{TYPE (paper_paper(paper1,paper0))}}}}}}", 0))
 except Exception as e:
     print(e)
+tet.print_tet()
+print(tet.parse_tet_str("{NODE {FUNCTION (logistic,-75,10)}{TYPE ()}{CHILD (paper0) {NODE {FUNCTION (logistic,-75,10)}{TYPE (author_paper(author0,paper0))}{CHILD (paper1) {NODE {FUNCTION (identity)}{TYPE (paper_paper(paper1,paper0))}}}{CHILD (paper1) {NODE {FUNCTION (identity)}{TYPE (paper_paper(paper1,paper0))}}}}}}}"))
 tet.print_tet()
