@@ -157,7 +157,22 @@ class RnnTet:
 
         print("\t"*(indent+1) + "]")
         print("\t"*indent + "}")
+    
+    def compute_evaluation(tetvalue):
+        if tetvalue.top == 'T':
+            if len(self.children) == 0:
+                return 1
+            else:
+                input = np.array(len(self.children))
+                i = 0
+                for child in self.children:
+                    input[i] = np.array()
+                    for subvalue in self.multisets[i]:
+                       input[i].append(child.compute_evaluation(subvalue))
+                    i += 1
 
+    def forward(weights, input):
+        
 
 value = TetValue()
 index = 0
