@@ -1,0 +1,23 @@
+{NODE {FUNCTION (logistic,-75,10)}
+      {TYPE (first(N))}
+      {CHILD (paper0) {NODE {FUNCTION (logistic,-75,10)}
+                            {TYPE (first_first(author0,paper0))}
+			    {CHILD (paper1) {NODE {FUNCTION (identity)}
+					          {TYPE (first_first_first(paper1,paper0))} 
+					    }
+                }
+                {CHILD (paper1) {NODE {FUNCTION (identity)}
+					          {TYPE (first_first_second(paper1,paper0))} 
+					    }
+                }
+                      }
+      }
+      {CHILD (paper0) {NODE {FUNCTION (logistic,-75,10)}
+                            {TYPE (second_first(author0,paper0))}
+			    {CHILD (paper1) {NODE {FUNCTION (identity)}
+					          {TYPE (second_first_first(paper1,paper0))} 
+					    }
+                            }
+                      }
+      }
+}
