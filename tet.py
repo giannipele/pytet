@@ -10,18 +10,30 @@ class RnnTet(NodeMixin):
     """
     def __init__(self, tetstring = "", binds="", parent=None):
         super(RnnTet, self).__init__()
+        self.parent=parent
+        self.binds = binds
         if tetstring != "":
-            self.parent=parent
-            self.binds = binds
             self.parse_tet_str(tetstring)
 
     def __str__(self):
         render = ""
         for pre, fill, node in RenderTree(self):
-            render = render +"{}{}\n".format(pre, node.name)
+            binds = ""
+            for b in node.binds:
+                binds += str(b) + ','
+            render = render +"{}{} {}\n".format(pre,binds, node.name)
         return render
 
-    def parse_tet_str(self, tetstr):
+    def parse_tet_str(self, tetstr, parser='v'):
+        if parser == 'v':
+            self.__parse_tet_verbose(tetstr)
+        elif parser == 'c':
+            self.__parse_tet_compact(tetstr)
+        else:
+            print("Unkown value for parser flag. Values are 'v' = verbose, 'c' = compact.")
+            return
+
+    def __parse_tet_verbose(self, tetstr):
         regex = re.compile(r'[\n\t\r]')
         tetstr = regex.sub(" ", tetstr)
         tetstr = tetstr.replace(' ','')
@@ -40,7 +52,7 @@ class RnnTet(NodeMixin):
             raise Exception("Malformed string. Expected 'FUNCTION', found '{0}'".format(substr))
         else:
             function = tokens_substr(substr,'()')
-            self.parse_activation_function(function)
+            self.__parse_activation_function(function)
         
         index += len(substr)+2
         substr = tokens_substr(tetstr[index:]) 
@@ -49,6 +61,8 @@ class RnnTet(NodeMixin):
         else:
             #self.rtype = tokens_substr(substr,'()')
             self.name = tokens_substr(substr,'()')
+            if self.name == "":
+                self.name = "T()"
 
         index += len(substr)+2
         while tetstr[index] != '}':
@@ -61,9 +75,12 @@ class RnnTet(NodeMixin):
                 subtet = tokens_substr(substr)
                 child = RnnTet(tetstring ="{"+subtet+"}", parent=self, binds=bind_variables)
                 index += len(substr)+2
-        return True
+        return True 
 
-    def parse_activation_function(self,string):
+    def __parse_tet_compact(self,tetstr):
+        print("To be done.")
+
+    def __parse_activation_function(self,string):
         s_split = string.split(',')
         params = [float(p) for p in s_split[1:]]
         s_split[0], params
@@ -90,6 +107,7 @@ file = open('tet.verbose', 'r')
 tet_txt = file.read()
 file.close()
 
-node_4 = RnnTet(tet_txt)
+node_4 = RnnTet()
+node_4.parse_tet_str(tet_txt, parser='v')
 node_4.print_tet()
 print(node_4)

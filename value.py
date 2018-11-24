@@ -22,7 +22,7 @@ class TetValue:
     def __init__(self, valuestr=""):
         self.multisets = []
         if valuestr != "":
-            self.parse_value(valuestr, 0)
+            self.parse_value_str(valuestr, 0)
 
     def __str__(self):
         if len(self.multisets) == 0:
@@ -35,7 +35,7 @@ class TetValue:
             stringify += ')'
             return stringify
 
-    def parse_value(self, valuestr, index):
+    def parse_value_str(self, valuestr, index):
         try:
             if valuestr[index] == '(':
                 index += 1
@@ -86,7 +86,7 @@ class TetMultiset:
             while valuestr[index] != ']': 
                 #print("Multiset idx: {}".format(index)) 
                 value = TetValue()
-                index = value.parse_value(valuestr, index + 1)
+                index = value.parse_value_str(valuestr, index + 1)
                 if valuestr[index] == ']':
                     break
                 elif valuestr[index] != ':': 
@@ -106,7 +106,7 @@ class TetMultiset:
 
 value = TetValue()
 index = 0
-index = value.parse_value("(T,[(T,[T:4]):3,(T,[T:2]):1],[(T,[]):1,(T,[T:8]):6,(T,[]):2 ])", 0)
+index = value.parse_value_str("(T,[(T,[T:4]):3,(T,[T:2]):1],[(T,[]):1,(T,[T:8]):6,(T,[]):2 ])", 0)
 print(value.count_nodes())
-
-print(value)
+v = str(value)
+print(v)
