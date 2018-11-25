@@ -33,4 +33,7 @@ def tokens_substr(tetstr, tokens='{}'):
         if copy:
             substr += tetstr[index]
         index += 1
-    return substr[1:]
+    if substr == "":
+        return ""
+    else:
+        return substr[1:]

@@ -8,4 +8,12 @@
                             }
                       }
       }
+      {CHILD (paper0) {NODE {FUNCTION (logistic,-75,10)}
+                            {TYPE (author_paper(author0,paper0))}
+			    {CHILD (paper1) {NODE {FUNCTION (identity)}
+					          {TYPE (paper_paper(paper1,paper0))} 
+					    }
+                            }
+                      }
+      }
 }

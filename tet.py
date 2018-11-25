@@ -59,7 +59,6 @@ class RnnTet(NodeMixin):
         if not substr.startswith("TYPE"):
             raise Exception("Malformed string. Expected 'TYPE', found '{0}'".format(substr))
         else:
-            #self.rtype = tokens_substr(substr,'()')
             self.name = tokens_substr(substr,'()')
             if self.name == "":
                 self.name = "T()"
@@ -73,12 +72,53 @@ class RnnTet(NodeMixin):
                 variables = tokens_substr(substr, '()')
                 bind_variables = variables.split(',')
                 subtet = tokens_substr(substr)
-                child = RnnTet(tetstring ="{"+subtet+"}", parent=self, binds=bind_variables)
+                child = RnnTet(parent=self, binds=bind_variables)
+                child.parse_tet_str("{"+subtet+"}", parser='v' )
                 index += len(substr)+2
         return True 
 
     def __parse_tet_compact(self,tetstr):
-        print("To be done.")
+        regex = re.compile(r'[\n\t\r]')
+        tetstr = regex.sub(" ", tetstr)
+        tetstr = tetstr.replace(' ','')
+        index = 0
+        if tetstr[index] != '(':
+            raise Exception("Malformed string. Expected '(', found '{0}' in sequence ...{1}...".format(tetstr[index],tetstr[index-4:]))
+        
+        substr = tokens_substr(tetstr[index:], tokens='()')
+        self.__parse_activation_function(substr)
+        
+        index += len(substr)+2
+        if tetstr[index] != '[':
+           raise Exception("Malformed string. Expected '[', found '{0}'".format(tetstr[index]))
+       
+        index += 1
+        name = tokens_substr(tetstr[index:],'()')
+        if name == "":
+            self.name = "T()"
+        else:
+            self.name = name
+        index += len(name) + 2
+        if tetstr[index] == ']':
+            return True
+       
+        index += 1
+        while tetstr[index] != ']' and index < len(tetstr) :
+            
+            substr = tokens_substr(tetstr[index:], '[]')
+            variables = tokens_substr(tetstr[index:], '()')
+            bind_variables = variables.split(',')
+            
+            tmp_index = len(variables) + 2
+            if substr[tmp_index] == ']':
+                raise Exception("Malformed string. Expected ',', found '{0}'".format(tetstr[tmp_index:]))
+            
+            child = RnnTet(parent=self, binds=bind_variables)
+            child.parse_tet_str(substr[tmp_index+1:], parser='c' )
+            
+            index += len(substr) + 2
+        return True
+
 
     def __parse_activation_function(self,string):
         s_split = string.split(',')
@@ -103,11 +143,11 @@ class RnnTet(NodeMixin):
         print("\t"*indent + "}")
 
 
-file = open('tet.verbose', 'r')
+file = open('tet.compact', 'r')
 tet_txt = file.read()
 file.close()
 
 node_4 = RnnTet()
-node_4.parse_tet_str(tet_txt, parser='v')
+node_4.parse_tet_str(tet_txt, parser='c')
 node_4.print_tet()
 print(node_4)
