@@ -6,9 +6,26 @@ from utils import tokens_substr
 
 class RnnTet(NodeMixin):
     """
-    Documentation: to be done.
+    A node in the RnnTet. 
+
+    Args:
+        tetstr      (str,optional): RnnTet string description.
+                                    Default parser is 'verbose'.
+        binds       (:obj:'list',optional): List of variables string name.
+                                            Default is [].
+        parent      (:obj:'anytree.NodeMixin', optional): Parent node. If parent is missing, 
+                                                          this node is the root.
+    
+    Attributes:
+        parent      (:obj:'anytree.NodeMixin') : Parent node of this node.
+        binds       (:obj:'list') : List of binding variables for this node.
+        name        (str) : String name of the node, name represents the 
+                     logical predicate of the TET.
+        children    (:obj:'list') : List of children nodes.
+        activation  (:obj:'functions') : Function object of the node.
+
     """
-    def __init__(self, tetstring = "", binds="", parent=None):
+    def __init__(self, tetstring = "", binds=[], parent=None):
         super(RnnTet, self).__init__()
         self.parent=parent
         self.binds = binds
@@ -16,6 +33,7 @@ class RnnTet(NodeMixin):
             self.parse_tet_str(tetstring)
 
     def __str__(self):
+        """Default method of the anytree library to stringify the TET."""
         render = ""
         for pre, fill, node in RenderTree(self):
             binds = ""
@@ -25,6 +43,11 @@ class RnnTet(NodeMixin):
         return render
 
     def parse_tet_str(self, tetstr, parser='v'):
+        """Function that decide which parser to use for the 
+           RnnTet string representation. Actual parser are
+           'v' = verbose
+           'c' = compact
+        """
         if parser == 'v':
             self.__parse_tet_verbose(tetstr)
         elif parser == 'c':
@@ -34,6 +57,7 @@ class RnnTet(NodeMixin):
             return
 
     def __parse_tet_verbose(self, tetstr):
+        """Parser for the verbose TET representation."""
         regex = re.compile(r'[\n\t\r]')
         tetstr = regex.sub(" ", tetstr)
         tetstr = tetstr.replace(' ','')
@@ -78,6 +102,7 @@ class RnnTet(NodeMixin):
         return True 
 
     def __parse_tet_compact(self,tetstr):
+        """Parser for the compact TET representation."""
         regex = re.compile(r'[\n\t\r]')
         tetstr = regex.sub(" ", tetstr)
         tetstr = tetstr.replace(' ','')
@@ -121,6 +146,9 @@ class RnnTet(NodeMixin):
 
 
     def __parse_activation_function(self,string):
+        """Parse the string contatining the information of the
+           node's activation function,and initialize node's 
+           variable <activation>"""
         s_split = string.split(',')
         params = [float(p) for p in s_split[1:]]
         s_split[0], params
@@ -130,6 +158,12 @@ class RnnTet(NodeMixin):
            self.activation = Identity()
 
     def print_tet(self, indent=0):
+        """Ad-Hoc indented printing method of the RnnTet.
+           Current information printed:
+                Binding Variables
+                Activation Function
+                Name (Type) of the node
+                Children-TET nodes"""
         prefix = "\t" * indent
         print("\t"*indent + "{NODE")
         print("\t"*(indent+1) + "BIND VARS: {}".format(self.binds))
@@ -143,11 +177,11 @@ class RnnTet(NodeMixin):
         print("\t"*indent + "}")
 
 
-file = open('tet.compact', 'r')
+file = open('tet.verbose', 'r')
 tet_txt = file.read()
 file.close()
 
 node_4 = RnnTet()
-node_4.parse_tet_str(tet_txt, parser='c')
+node_4.parse_tet_str(tet_txt, parser='v')
 node_4.print_tet()
 print(node_4)

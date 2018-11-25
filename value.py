@@ -1,30 +1,24 @@
 
-def next_token(string, token, index=0, parenthesis=False):
-    substr = ""
-    folding = False
-    p_checker = 0
-    while string[index] != token or folding:
-        substr += string[index]
-        if parenthesis:
-            if string[index] == '(':
-                p_checker += 1
-            elif string[index] == ')':
-                p_checker -= 1
-            if p_checker == 0:
-                folding = False
-            else:
-                folding = True
-        index += 1
-    return substr, index
-
-
 class TetValue:
+    """
+    Class that reoresents a TetValue, a nested multisets of multisets structure
+    of boolean assignment.
+
+    Args:
+        valuestr    (str) : String value of the TetValue.
+
+    Attributes:
+        top         (str) : Top value of the TetValue.
+        multisets   (:obj:'list') : List of the children multiset.
+    """
     def __init__(self, valuestr=""):
         self.multisets = []
         if valuestr != "":
-            self.parse_value_str(valuestr, 0)
+            self.parse_value(valuestr, 0)
 
     def __str__(self):
+        """Stringify the TetValue. Same representation as the one for the
+           init valuestr input."""
         if len(self.multisets) == 0:
             return str(self.top)
         else:
@@ -35,12 +29,12 @@ class TetValue:
             stringify += ')'
             return stringify
 
-    def parse_value_str(self, valuestr, index):
+    def parse_value(self, valuestr, index):
+        """Take in input a TetValue string, recursively generate the value."""
         try:
             if valuestr[index] == '(':
                 index += 1
                 self.top = valuestr[index]
-                #print("Top: {}".format(index))
                 index += 1
                 while valuestr[index] != ')':
                     multiset = TetMultiset()
@@ -64,12 +58,21 @@ class TetValue:
         return count
 
 
+class TetMultiset:
+    """
+    Multiset class contains the TetValues and their multiplcity.
 
-class TetMultiset: 
+    Args:
+        valuestr    (str) : Input string of the multiset representation.
+
+    Attributes
+        elements    (:obj:'list') : List of tuples of (TetValue, count)
+    """
     def __init__(self, valuestr=""): 
         self.elements = []
 
     def __str__(self):
+        """Stringify the Multiset."""
         if len(self.elements) == 0:
             return "[ ]"
         else:
@@ -80,33 +83,29 @@ class TetMultiset:
             return stringify
 
     def parse_multiset_str(self, valuestr, index):
-        try: 
-            if valuestr[index] != '[':
-                raise Exception("Malformed string. Expected '[', found '{0}' at position {1}".format(valuestr[index], index)) 
-            while valuestr[index] != ']': 
-                #print("Multiset idx: {}".format(index)) 
-                value = TetValue()
-                index = value.parse_value_str(valuestr, index + 1)
-                if valuestr[index] == ']':
-                    break
-                elif valuestr[index] != ':': 
-                    raise Exception("Malformed string. Expected ':', found '{0}' at position {1}".format(valuestr[index], index))
+        """Generate the multiset from the string representation."""
+        if valuestr[index] != '[':
+            raise Exception("Malformed string. Expected '[', found '{0}' at position {1}".format(valuestr[index], index)) 
+        while valuestr[index] != ']': 
+            value = TetValue()
+            index = value.parse_value(valuestr, index + 1)
+            if valuestr[index] == ']':
+                break
+            elif valuestr[index] != ':': 
+                raise Exception("Malformed string. Expected ':', found '{0}' at position {1}".format(valuestr[index], index))
+            index += 1 
+            count = "" 
+            while valuestr[index] != ',' and valuestr[index] != ']':
+                count += valuestr[index] 
                 index += 1 
-                count = "" 
-                while valuestr[index] != ',' and valuestr[index] != ']':
-                    count += valuestr[index] 
-                    index += 1 
-                int_count = int(count)
-                #print(count)
-                self.elements.append((value, int_count)) 
-            return index + 1
-        except Exception as e:
-            print('Exception: {}'.format(e))
+            int_count = int(count)
+            self.elements.append((value, int_count)) 
+        return index + 1
             
 
 value = TetValue()
 index = 0
-index = value.parse_value_str("(T,[(T,[T:4]):3,(T,[T:2]):1],[(T,[]):1,(T,[T:8]):6,(T,[]):2 ])", 0)
+index = value.parse_value("(T,[(T,[T:4]):3,(T,[T:2]):1],[(T,[]):1,(T,[T:8]):6,(T,[]):2 ])", 0)
 print(value.count_nodes())
-v = str(value)
-print(v)
+
+print(value)
