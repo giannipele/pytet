@@ -4,6 +4,8 @@ from anytree import NodeMixin, RenderTree
 from functions import Logistic, Identity
 from utils import tokens_substr
 from value import TetValue
+from autograd import grad
+from computational import ComputationalNode
 
 class RnnTet(NodeMixin):
     """
@@ -191,7 +193,25 @@ class RnnTet(NodeMixin):
             s = self.activation.forward(comp)
             return s
 
-file = open('tet.verbose', 'r')
+    def compute_gradient(self, value):
+        fun_grad = grad(self.activation.forward)
+        return fun_grad(value)
+    
+    def create_computational_graph(self, value):
+         if self.is_leaf:
+           return ComputationalNode(self.activation.params, True)
+         else:
+            c_node = ComputationalNode(self.activation.params, False)
+            for i, child in enumerate(self.children):
+                multiset = value.multisets[i]
+                c_node.add_multiset()
+                for v in multiset.elements:
+                    for _ in range(v[1]):
+                        c_node.add_value_to_multiset(i, child.create_computational_graph(v[0]))
+            return c_node
+
+
+file = open('tet-quali.verbose', 'r')
 tet_txt = file.read()
 file.close()
 
@@ -202,11 +222,21 @@ print(rnntet)
 
 value = TetValue()
 index = 0
-index = value.parse_value("(T,[(T,[T:8]):4,(T,[T:9]):2,(T,[T:10]):2])", 0)
-print(value)
+#index = value.parse_value("(T,[(T,[T:8]):4,(T,[T:9]):2,(T,[T:10]):2])", 0)
+
+index = value.parse_value("(T,[(T,[T:3]):2,(T,[T:2]):1],[T:3])", 0)
+print(value.count_nodes())
 
 res = rnntet.compute_value(value)
+#g = rnntet.compute_gradient(value)
+
 print(res)
+
+c_graph = rnntet.create_computational_graph(value)
+g = c_graph.forward()
+c_grad = grad(c_graph.forward)
+print("VALUE: ", g)
+print("GRADIENT: ", c_grad())
 
 
 

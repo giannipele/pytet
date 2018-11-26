@@ -24,8 +24,12 @@ class Logistic():
         return 1/ (1+np.exp(-x)) 
     
 class Identity():
-    def forward(x=None):
+    def __init__(self):
+        self.params = []
+
+    def forward(self, x=None):
         return 1
+
     def __str__(self):
         return "Identity"
 
