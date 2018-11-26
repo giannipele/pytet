@@ -12,13 +12,19 @@ class Logistic():
             return 0
         #print(type(x))
         output = self.params[0]
+        print("OUT1: ", output)
         for m in x:
             #print(m)
             multiset_out = 0
+            i = 1
             for v in m:
                 #print(v)
-                multiset_out += v[0] * v[1]
+                print("FORW: ", v[0] * v[1])
+                multiset_out += self.params[i] * v[0] * v[1]
+            i += 1
+            print("MULTI: ", multiset_out)
             output += multiset_out
+        print("OUT2: ", output)
         return self.sigmoid(output)
     
     def sigmoid(self,x):

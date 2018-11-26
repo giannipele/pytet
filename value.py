@@ -103,9 +103,9 @@ class TetMultiset:
         return index + 1
             
 
-value = TetValue()
-index = 0
-index = value.parse_value("(T,[(T,[T:4]):3,(T,[T:2]):1],[(T,[]):1,(T,[T:8]):6,(T,[]):2 ])", 0)
-print(value.count_nodes())
-
-print(value)
+#value = TetValue()
+#index = 0
+#index = value.parse_value("(T,[(T,[T:4]):3,(T,[T:2]):1],[(T,[]):1,(T,[T:8]):6,(T,[]):2 ])", 0)
+#print(value.count_nodes())
+#
+#print(value)

@@ -3,7 +3,7 @@ import re
 from anytree import NodeMixin, RenderTree
 from functions import Logistic, Identity
 from utils import tokens_substr
-from tetutils import TetValue
+from value import TetValue
 
 class RnnTet(NodeMixin):
     """
@@ -178,7 +178,9 @@ class RnnTet(NodeMixin):
 
     def compute_value(self, value):
         if self.is_leaf:
-            return self.activation.forward()
+            ret = self.activation.forward()
+            print("LEAF: ", ret)
+            return ret
         else:
             computations = []
             for i, child in enumerate(self.children):
@@ -188,13 +190,23 @@ class RnnTet(NodeMixin):
                     computations[i].append([child.compute_value(v[0]), v[1]])
             comp = np.asarray(computations)
             s = self.activation.forward(comp)
+            print("NODE: ", s, computations)
             return s
 
-file = open('tet-a.verbose', 'r')
+file = open('tet.verbose', 'r')
 tet_txt = file.read()
 file.close()
 
-node_4 = RnnTet()
-node_4.parse_tet_str(tet_txt, parser='v')
-node_4.print_tet()
-print(node_4)
+rnntet = RnnTet()
+rnntet.parse_tet_str(tet_txt, parser='v')
+#node_4.print_tet()
+print(rnntet)
+
+
+value = TetValue()
+index = 0
+index = value.parse_value("(T,[(T,[T:8]):4,(T,[T:9]):2,(T,[T:10]):2])", 0)
+print(value)
+
+res = rnntet.compute_value(value)
+print(res)
