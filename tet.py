@@ -179,7 +179,6 @@ class RnnTet(NodeMixin):
     def compute_value(self, value):
         if self.is_leaf:
             ret = self.activation.forward()
-            print("LEAF: ", ret)
             return ret
         else:
             computations = []
@@ -190,7 +189,6 @@ class RnnTet(NodeMixin):
                     computations[i].append([child.compute_value(v[0]), v[1]])
             comp = np.asarray(computations)
             s = self.activation.forward(comp)
-            print("NODE: ", s, computations)
             return s
 
 file = open('tet.verbose', 'r')
@@ -199,7 +197,6 @@ file.close()
 
 rnntet = RnnTet()
 rnntet.parse_tet_str(tet_txt, parser='v')
-#node_4.print_tet()
 print(rnntet)
 
 
@@ -210,3 +207,23 @@ print(value)
 
 res = rnntet.compute_value(value)
 print(res)
+
+
+
+#file = open('tet-quali.verbose', 'r')
+#tet_txt = file.read()
+#file.close()
+#
+#rnntet = RnnTet()
+#rnntet.parse_tet_str(tet_txt, parser='v')
+##node_4.print_tet()
+#print(rnntet)
+#
+#
+#value = TetValue()
+#index = 0
+#index = value.parse_value("(T,[(T,[T:3]):2,(T,[T:2]):1],[T:3])", 0)
+#print(value)
+#
+#res = rnntet.compute_value(value)
+#print(res)
