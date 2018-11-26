@@ -1,5 +1,6 @@
 from autograd import grad
 import autograd.numpy as np
+from functions import Logistic, Identity
 
 def next_token(string, token, index=0, parenthesis=False):
     substr = ""
@@ -89,66 +90,66 @@ class TetMultiset:
         except Exception as e:
             print('Exception: {}'.format(e))
 
-class RnnTet:
-    def __init__(self, tetstr=""):
-        self.type = ""
-        self.children = []
-        if tetstr != "":
-            self.parse_tet_str(tetstr, 0)
-
-    def parse_tet_str(self, tetstr, index=0):
-        #print("INDEX: {}".format(index))
-        #tetstr = tetstr.strip()
-        tetstr = tetstr.replace(' ','')
-        #print(tetstr[index:] + "\n")
-        if tetstr[index] != '{':
-            #print("String: {}, Index:{}".format(tetstr,index))
-            raise Exception("Malformed string. Expected '{', found '{0}' at position {1}".format(tetstr[index], index))
-
-        index += 1
-        substr, index = next_token(tetstr, '{', index) 
-        if substr != "NODE":
-            #print("String: {}, Index:{}".format(tetstr,index))
-            raise Exception("Malformed string. Expected 'NODE', found '{0}'".format(substr))
-
-        index += 1
-        substr, index = next_token(tetstr, '(', index) 
-        if substr != "FUNCTION":
-            #print("String: {}, Index:{}".format(tetstr,index))
-            raise Exception("Malformed string. Expected 'FUNCTION', found '{0}'".format(substr))
-
-        index += 1
-        substr, index = next_token(tetstr, ')', index)
-        fun, params = parse_function(substr)
-        if fun == 'logistic':
-            self.activation = Logistic(params)
-        elif fun == 'identity':
-           self.activation = Identity()
-        index += 3
-        substr, index = next_token(tetstr, '(', index)
-        if substr != "TYPE":
-            #print("String: {}, Index:{}".format(tetstr,index))
-            raise Exception("Malformed string. Expected 'TYPE', found '{0}'".format(substr))
-
-        index += 1
-        substr, index = next_token(tetstr, ')', index, parenthesis=True)
-        self.type = substr
-
-        index += 2
-        while tetstr[index] != '}':
-            if tetstr[index] == '{':
-                index += 1
-                substr, index = next_token(tetstr, '(', index)
-                if substr != "CHILD":
-                    #print("String: {}, Index:{}".format(tetstr,index))
-                    raise Exception("Malformed string. Expected 'CHILD', found '{0}'".format(substr))
-
-                substr, index = next_token(tetstr, ')', index + 1)
-                child = RnnTet()
-                index = child.parse_tet_str(tetstr, index + 1)
-                self.children.append(child)
-            index += 2 
-        return index
+#class RnnTet:
+#    def __init__(self, tetstr=""):
+#        self.type = ""
+#        self.children = []
+#        if tetstr != "":
+#            self.parse_tet_str(tetstr, 0)
+#
+#    def parse_tet_str(self, tetstr, index=0):
+#        #print("INDEX: {}".format(index))
+#        #tetstr = tetstr.strip()
+#        tetstr = tetstr.replace(' ','')
+#        #print(tetstr[index:] + "\n")
+#        if tetstr[index] != '{':
+#            #print("String: {}, Index:{}".format(tetstr,index))
+#            raise Exception("Malformed string. Expected '{', found '{0}' at position {1}".format(tetstr[index], index))
+#
+#        index += 1
+#        substr, index = next_token(tetstr, '{', index) 
+#        if substr != "NODE":
+#            #print("String: {}, Index:{}".format(tetstr,index))
+#            raise Exception("Malformed string. Expected 'NODE', found '{0}'".format(substr))
+#
+#        index += 1
+#        substr, index = next_token(tetstr, '(', index) 
+#        if substr != "FUNCTION":
+#            #print("String: {}, Index:{}".format(tetstr,index))
+#            raise Exception("Malformed string. Expected 'FUNCTION', found '{0}'".format(substr))
+#
+#        index += 1
+#        substr, index = next_token(tetstr, ')', index)
+#        fun, params = parse_function(substr)
+#        if fun == 'logistic':
+#            self.activation = Logistic(params)
+#        elif fun == 'identity':
+#           self.activation = Identity()
+#        index += 3
+#        substr, index = next_token(tetstr, '(', index)
+#        if substr != "TYPE":
+#            #print("String: {}, Index:{}".format(tetstr,index))
+#            raise Exception("Malformed string. Expected 'TYPE', found '{0}'".format(substr))
+#
+#        index += 1
+#        substr, index = next_token(tetstr, ')', index, parenthesis=True)
+#        self.type = substr
+#
+#        index += 2
+#        while tetstr[index] != '}':
+#            if tetstr[index] == '{':
+#                index += 1
+#                substr, index = next_token(tetstr, '(', index)
+#                if substr != "CHILD":
+#                    #print("String: {}, Index:{}".format(tetstr,index))
+#                    raise Exception("Malformed string. Expected 'CHILD', found '{0}'".format(substr))
+#
+#                substr, index = next_token(tetstr, ')', index + 1)
+#                child = RnnTet()
+#                index = child.parse_tet_str(tetstr, index + 1)
+#                self.children.append(child)
+#            index += 2 
+#        return index
 
     def print_tet(self, indent=0):
         prefix = "\t" * indent
@@ -180,40 +181,21 @@ class RnnTet:
                 return self.activation.forward(np.asarray(evaluations))
                 
 
-class Logistic():
-    def __init__(self, params):
-        self.params = np.array(params)
-
-    def forward(self, x):
-        print(type(x))
-        output = self.params[0]
-        for m in x:
-            print(m)
-            multiset_out = 0
-            for v in m:
-                print(v)
-                multiset_out += v[0] * v[1]
-            output += multiset_out
-        return output
-    
-class Identity():
-    def forward(x):
-        return 1
 
 
 
-value = TetValue()
-index = 0
-index = value.parse_value("(T,[(T,[T:4]):3,(T,[T:2]):1],[(T,[]):1,(T,[T:8]):6,(T,[]):2 ])", 0)
-#print("Index: {}".format(index))
-#print("Number of nodes: {}".format(value.count_nodes()))
-tet = RnnTet ("{NODE {FUNCTION (logistic,-75,10)}{TYPE ()}}")
-try:
-    print(tet.parse_tet_str("{NODE {FUNCTION (logistic,-75,10)}{TYPE ()}{CHILD (paper0) {NODE {FUNCTION (logistic,-75,10)}{TYPE (author_paper(author0,paper0))}{CHILD (paper1) {NODE {FUNCTION (identity)}{TYPE (paper_paper(paper1,paper0))}}}}}}", 0))
-except Exception as e:
-    print(e)
-#tet.print_tet()
-print(tet.parse_tet_str("{NODE {FUNCTION (logistic,-75,10)}{TYPE ()}{CHILD (paper0) {NODE {FUNCTION (logistic,-75,10)}{TYPE (author_paper(author0,paper0))}{CHILD (paper1) {NODE {FUNCTION (identity)}{TYPE (paper_paper(paper1,paper0))}}}{CHILD (paper1) {NODE {FUNCTION (identity)}{TYPE (paper_paper(paper1,paper0))}}}}}}}"))
-#tet.print_tet()
-tet.compute_evaluation(value)
-print(value)
+#value = TetValue()
+#index = 0
+#index = value.parse_value("(T,[(T,[T:4]):3,(T,[T:2]):1],[(T,[]):1,(T,[T:8]):6,(T,[]):2 ])", 0)
+##print("Index: {}".format(index))
+##print("Number of nodes: {}".format(value.count_nodes()))
+#tet = RnnTet ("{NODE {FUNCTION (logistic,-75,10)}{TYPE ()}}")
+#try:
+#    print(tet.parse_tet_str("{NODE {FUNCTION (logistic,-75,10)}{TYPE ()}{CHILD (paper0) {NODE {FUNCTION (logistic,-75,10)}{TYPE (author_paper(author0,paper0))}{CHILD (paper1) {NODE {FUNCTION (identity)}{TYPE (paper_paper(paper1,paper0))}}}}}}", 0))
+#except Exception as e:
+#    print(e)
+##tet.print_tet()
+#print(tet.parse_tet_str("{NODE {FUNCTION (logistic,-75,10)}{TYPE ()}{CHILD (paper0) {NODE {FUNCTION (logistic,-75,10)}{TYPE (author_paper(author0,paper0))}{CHILD (paper1) {NODE {FUNCTION (identity)}{TYPE (paper_paper(paper1,paper0))}}}{CHILD (paper1) {NODE {FUNCTION (identity)}{TYPE (paper_paper(paper1,paper0))}}}}}}}"))
+##tet.print_tet()
+#tet.compute_evaluation(value)
+#print(value)
