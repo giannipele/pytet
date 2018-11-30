@@ -22,7 +22,9 @@ class ComputationalNode():
                 count += sub_node
         return count
 
+
     def forward(self):
+        #print("BOOOO")
         #print("PAR: ", self.params)
         if self.leaf:
             return 1
@@ -38,4 +40,5 @@ class ComputationalNode():
     
     def sigmoid(self,x):
         return 1/ (1+np.exp(-x)) 
-
+    
+    

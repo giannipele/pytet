@@ -210,8 +210,56 @@ class RnnTet(NodeMixin):
                         c_node.add_value_to_multiset(i, child.create_computational_graph(v[0]))
             return c_node
 
+    def get_params(self):
+        if self.is_leaf:
+            return self.activation.params
+        else:
+            params = [_ for _ in self.activation.params]
+            for child in self.children:
+                params.append(child.get_params())
+            return params
+    
+    def forward_value(self, params, value):
+        print(type(params))
+        if not type(value) == np.ndarray:
+            return np.float64(1)
+        else:
+            print("V: ", params)
+            output = params[0]
+            for i, m in enumerate(value):
+                child = self.children[i]
+                multiset_out = []
+                for v in m:
+                    multiset_out.append(params[i+1] * child.forward_value(child.activation.params, v[0]) * v[1])
+                output += np.sum(multiset_out)
+            return self.sigmoid(output)
 
-file = open('tet-quali.verbose', 'r')
+
+def forward_value_ind(params, value):
+    print(type(params))
+    if not type(value) == np.ndarray:
+        return np.float64(1)
+    else:
+        print("V: ", params)
+        output = params[0]
+        for i, m in enumerate(value):
+            multiset_out = []
+            for v in m:
+                multiset_out.append(params[i+1] * forward_value_ind(params[i+len(value)+1], v[0]) * v[1])
+            output += np.sum(multiset_out)
+        return sigmoid(output)
+
+def sigmoid(x):
+    return 1/ (1+np.exp(-x))
+
+def loss(par, value):
+    return ((forward_value_ind(par, value) - 1)**2)/2
+
+
+
+
+
+file = open('tet.verbose', 'r')
 tet_txt = file.read()
 file.close()
 
@@ -222,9 +270,9 @@ print(rnntet)
 
 value = TetValue()
 index = 0
-#index = value.parse_value("(T,[(T,[T:8]):4,(T,[T:9]):2,(T,[T:10]):2])", 0)
+index = value.parse_value("(T,[(T,[T:8]):4,(T,[T:9]):2,(T,[T:10]):2])", 0)
 
-index = value.parse_value("(T,[(T,[T:3]):2,(T,[T:2]):1],[T:3])", 0)
+#index = value.parse_value("(T,[(T,[T:3]):2,(T,[T:2]):1],[T:3])", 0)
 print(value.count_nodes())
 
 res = rnntet.compute_value(value)
@@ -233,10 +281,31 @@ res = rnntet.compute_value(value)
 print(res)
 
 c_graph = rnntet.create_computational_graph(value)
-g = c_graph.forward()
-c_grad = grad(c_graph.forward)
-print("VALUE: ", g)
-print("GRADIENT: ", c_grad())
+#g = c_graph.forward()
+
+npv = np.asarray(value.convert_numpy_array())
+print(npv)
+
+
+par = rnntet.get_params()
+
+r = loss(par, npv)
+print(r)
+#v = rnntet.forward_value(npv, rnntet.activation.params)
+#print(v)
+
+loss_grad = grad(loss, argnum=0)
+res = loss_grad(par, npv)
+print (res)
+
+#v_grad = grad(forward_value_ind, argnum=0)
+#res = v_grad(par, npv)
+#print(res)
+
+
+#c_grad = grad(c_graph.forward)
+#print("VALUE: ", g)
+#print("GRADIENT: ", c_grad())
 
 
 

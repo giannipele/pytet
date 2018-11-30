@@ -1,3 +1,4 @@
+import autograd.numpy as np
 
 class TetValue:
     """
@@ -57,6 +58,20 @@ class TetValue:
                 count += sub_nodes * e[1]
         return count
 
+    def convert_numpy_array(self):
+        if len(self.multisets) == 0:
+            return 1
+        else:
+            v_array = []
+            for i, m in enumerate(self.multisets):
+                v_array.append([])
+                for v in m.elements:
+                    v_array[i].append([v[0].convert_numpy_array(), v[1]])
+                #for v in m.elements:
+                #    for j in range(v[1]):
+                #        v_array[i].append(v[0].convert_numpy_array())
+            return np.asarray(v_array)
+            #return convert
 
 class TetMultiset:
     """
@@ -101,8 +116,7 @@ class TetMultiset:
             int_count = int(count)
             self.elements.append((value, int_count)) 
         return index + 1
-            
-
+        
 #value = TetValue()
 #index = 0
 #index = value.parse_value("(T,[(T,[T:4]):3,(T,[T:2]):1],[(T,[]):1,(T,[T:8]):6,(T,[]):2 ])", 0)
