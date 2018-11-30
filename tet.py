@@ -3,7 +3,7 @@ import re
 from anytree import NodeMixin, RenderTree
 from functions import Logistic, Identity
 from utils import tokens_substr
-from value import TetValue
+from value import TetValue, TetMultiset
 from autograd import grad
 from computational import ComputationalNode
 
@@ -219,23 +219,36 @@ class RnnTet(NodeMixin):
                 params.append(child.get_params())
             return params
     
-    def forward_value(self, params, value):
-        #print(type(value))
+    def forward_value(self, params, value, eval_values=None):
         if self.is_leaf:
             return np.float64(1)
         else:
-            #print("V: ", params)
+            multisets = []
             output = params[0]
             for i, m in enumerate(value):
+                if not eval_values == None:
+                    multisets.append(TetMultiset())
                 child = self.children[i]
                 multiset_out = []
                 for v in m:
-                    multiset_out.append([child.forward_value(params[i+len(value)+1], v[0]), v[1]])
-            print(multiset_out)
-            return self.activation.forward(params, [multiset_out])
+                    if not eval_values == None:
+                        sub_value = TetValue()
+                        multiset_out.append([child.forward_value(params[i+len(value)+1],
+                            v[0], sub_value), v[1]])
+                        multisets[i].elements.append((sub_value, v[1]))
+                    else:
+                        multiset_out.append([child.forward_value(params[i+len(value)+1],
+                            v[0]), v[1]])
 
-def loss(par, value, tet):
-    return ((tet.forward_value(par, value) - 1)**2)/2
+            r = self.activation.forward(params, [multiset_out])
+            if not eval_values == None:
+                eval_values.top = r
+                eval_values.multisets = multisets
+            return r
+
+
+def loss(par, value, tet, evaluations):
+    return ((tet.forward_value(par, value, evaluations) - 1)**2)/2
 
 
 
@@ -264,9 +277,12 @@ print(params)
 res = rnntet.forward_value(params, npv)
 print (res)
 
+evaluation_values = TetValue()
+
 evaluation_grad = grad(loss, argnum=0)
-gr = evaluation_grad(params, npv, rnntet)
+gr = evaluation_grad(params, npv, rnntet, evaluation_values)
 print(gr)
 
-evaluation_values = TetValue()
+
+print("WEWE: ", evaluation_values.multisets[0].elements[0][0].top)
 
