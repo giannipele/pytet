@@ -220,40 +220,22 @@ class RnnTet(NodeMixin):
             return params
     
     def forward_value(self, params, value):
-        print(type(params))
-        if not type(value) == np.ndarray:
+        #print(type(value))
+        if self.is_leaf:
             return np.float64(1)
         else:
-            print("V: ", params)
+            #print("V: ", params)
             output = params[0]
             for i, m in enumerate(value):
                 child = self.children[i]
                 multiset_out = []
                 for v in m:
-                    multiset_out.append(params[i+1] * child.forward_value(child.activation.params, v[0]) * v[1])
-                output += np.sum(multiset_out)
-            return self.sigmoid(output)
+                    multiset_out.append([child.forward_value(params[i+len(value)+1], v[0]), v[1]])
+            print(multiset_out)
+            return self.activation.forward(params, [multiset_out])
 
-
-def forward_value_ind(params, value):
-    print(type(params))
-    if not type(value) == np.ndarray:
-        return np.float64(1)
-    else:
-        print("V: ", params)
-        output = params[0]
-        for i, m in enumerate(value):
-            multiset_out = []
-            for v in m:
-                multiset_out.append(params[i+1] * forward_value_ind(params[i+len(value)+1], v[0]) * v[1])
-            output += np.sum(multiset_out)
-        return sigmoid(output)
-
-def sigmoid(x):
-    return 1/ (1+np.exp(-x))
-
-def loss(par, value):
-    return ((forward_value_ind(par, value) - 1)**2)/2
+def loss(par, value, tet):
+    return ((tet.forward_value(par, value) - 1)**2)/2
 
 
 
@@ -271,58 +253,20 @@ print(rnntet)
 value = TetValue()
 index = 0
 index = value.parse_value("(T,[(T,[T:8]):4,(T,[T:9]):2,(T,[T:10]):2])", 0)
-
 #index = value.parse_value("(T,[(T,[T:3]):2,(T,[T:2]):1],[T:3])", 0)
-print(value.count_nodes())
-
-res = rnntet.compute_value(value)
-#g = rnntet.compute_gradient(value)
-
-print(res)
-
-c_graph = rnntet.create_computational_graph(value)
-#g = c_graph.forward()
 
 npv = np.asarray(value.convert_numpy_array())
 print(npv)
 
+params = rnntet.get_params()
+print(params)
 
-par = rnntet.get_params()
-
-r = loss(par, npv)
-print(r)
-#v = rnntet.forward_value(npv, rnntet.activation.params)
-#print(v)
-
-loss_grad = grad(loss, argnum=0)
-res = loss_grad(par, npv)
+res = rnntet.forward_value(params, npv)
 print (res)
 
-#v_grad = grad(forward_value_ind, argnum=0)
-#res = v_grad(par, npv)
-#print(res)
+evaluation_grad = grad(loss, argnum=0)
+gr = evaluation_grad(params, npv, rnntet)
+print(gr)
 
+evaluation_values = TetValue()
 
-#c_grad = grad(c_graph.forward)
-#print("VALUE: ", g)
-#print("GRADIENT: ", c_grad())
-
-
-
-#file = open('tet-quali.verbose', 'r')
-#tet_txt = file.read()
-#file.close()
-#
-#rnntet = RnnTet()
-#rnntet.parse_tet_str(tet_txt, parser='v')
-##node_4.print_tet()
-#print(rnntet)
-#
-#
-#value = TetValue()
-#index = 0
-#index = value.parse_value("(T,[(T,[T:3]):2,(T,[T:2]):1],[T:3])", 0)
-#print(value)
-#
-#res = rnntet.compute_value(value)
-#print(res)
