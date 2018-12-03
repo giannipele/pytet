@@ -193,22 +193,18 @@ class RnnTet(NodeMixin):
             s = self.activation.forward(comp)
             return s
 
-    def compute_gradient(self, value):
-        fun_grad = grad(self.activation.forward)
-        return fun_grad(value)
-    
-    def create_computational_graph(self, value):
-         if self.is_leaf:
-           return ComputationalNode(self.activation.params, True)
-         else:
-            c_node = ComputationalNode(self.activation.params, False)
-            for i, child in enumerate(self.children):
-                multiset = value.multisets[i]
-                c_node.add_multiset()
-                for v in multiset.elements:
-                    for _ in range(v[1]):
-                        c_node.add_value_to_multiset(i, child.create_computational_graph(v[0]))
-            return c_node
+#    def create_computational_graph(self, value):
+#         if self.is_leaf:
+#           return ComputationalNode(self.activation.params, True)
+#         else:
+#            c_node = ComputationalNode(self.activation.params, False)
+#            for i, child in enumerate(self.children):
+#                multiset = value.multisets[i]
+#                c_node.add_multiset()
+#                for v in multiset.elements:
+#                    for _ in range(v[1]):
+#                        c_node.add_value_to_multiset(i, child.create_computational_graph(v[0]))
+#            return c_node
 
     def get_params(self):
         if self.is_leaf:
@@ -221,6 +217,8 @@ class RnnTet(NodeMixin):
     
     def forward_value(self, params, value, eval_values=None):
         if self.is_leaf:
+            if not eval_values == None:
+                eval_values.top = np.float(1)
             return np.float64(1)
         else:
             multisets = []
@@ -284,5 +282,5 @@ gr = evaluation_grad(params, npv, rnntet, evaluation_values)
 print(gr)
 
 
-print("WEWE: ", evaluation_values.multisets[0].elements[0][0].top)
+print("WEWE: ", evaluation_values.top._value)
 

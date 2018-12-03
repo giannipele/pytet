@@ -67,11 +67,7 @@ class TetValue:
                 v_array.append([])
                 for v in m.elements:
                     v_array[i].append([v[0].convert_numpy_array(), v[1]])
-                #for v in m.elements:
-                #    for j in range(v[1]):
-                #        v_array[i].append(v[0].convert_numpy_array())
             return np.asarray(v_array)
-            #return convert
 
 class TetMultiset:
     """
