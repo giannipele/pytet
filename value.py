@@ -15,7 +15,7 @@ class TetValue:
     def __init__(self, valuestr=""):
         self.multisets = []
         if valuestr != "":
-            self.parse_value(valuestr, 0)
+            self.parse_value_str(valuestr, 0)
 
     def __str__(self):
         """Stringify the TetValue. Same representation as the one for the
@@ -30,7 +30,7 @@ class TetValue:
             stringify += ')'
             return stringify
 
-    def parse_value(self, valuestr, index):
+    def parse_value_str(self, valuestr, index=0):
         """Take in input a TetValue string, recursively generate the value."""
         try:
             if valuestr[index] == '(':
@@ -58,7 +58,7 @@ class TetValue:
                 count += sub_nodes * e[1]
         return count
 
-    def convert_numpy_array(self):
+    def arrayfy(self):
         if len(self.multisets) == 0:
             return 1
         else:
@@ -66,8 +66,8 @@ class TetValue:
             for i, m in enumerate(self.multisets):
                 v_array.append([])
                 for v in m.elements:
-                    v_array[i].append([v[0].convert_numpy_array(), v[1]])
-            return np.asarray(v_array)
+                    v_array[i].append([v[0].arrayfy(), v[1]])
+            return v_array
 
 class TetMultiset:
     """
@@ -99,7 +99,7 @@ class TetMultiset:
             raise Exception("Malformed string. Expected '[', found '{0}' at position {1}".format(valuestr[index], index)) 
         while valuestr[index] != ']': 
             value = TetValue()
-            index = value.parse_value(valuestr, index + 1)
+            index = value.parse_value_str(valuestr, index + 1)
             if valuestr[index] == ']':
                 break
             elif valuestr[index] != ':': 
@@ -112,10 +112,6 @@ class TetMultiset:
             int_count = int(count)
             self.elements.append((value, int_count)) 
         return index + 1
-        
-#value = TetValue()
-#index = 0
-#index = value.parse_value("(T,[(T,[T:4]):3,(T,[T:2]):1],[(T,[]):1,(T,[T:8]):6,(T,[]):2 ])", 0)
-#print(value.count_nodes())
-#
-#print(value)
+
+
+

@@ -1,15 +1,17 @@
+from value import TetValue
 
 def tokens_substr(tetstr, tokens='{}'):
-    """Return the substring between the two parenthesis. The function copies
+    """Return the substring between the two tokens. The function copies
     the part of the string between the first occurrence of the opening 
     character and the respective closing one.
 
     Example:
-        Given a string such as "123{content}", the function returns 
-        "content". 
+        Given a string such as "123{hello}", the function returns 
+        "hello". With nested recurrences as in "[([hello])]" the function
+        returns "([hello)]".
 
     Args:
-        tetstr (str): Full string.
+        tetstr (str): The string to parse.
         token (str): Opening and closing character that include the substring.
 
     Returns:
@@ -37,3 +39,24 @@ def tokens_substr(tetstr, tokens='{}'):
         return ""
     else:
         return substr[1:]
+
+def read_values_file(file_path):
+    values = []
+    with open(file_path, 'r') as reader:
+        lines = reader.readlines()
+        for line in lines:
+            v = TetValue(line)
+            values.append(v.arrayfy())
+    return values
+
+def read_labels_file(file_path):
+    labels = []
+    with open(file_path, 'r') as reader:
+        lines = reader.readlines()
+        for line in lines:
+            labels.append(int(line))
+    return labels
+
+def read_values_labels_files(values_path, labels_path):
+    return read_values_file(values_path), read_labels_file(labels_path)
+
