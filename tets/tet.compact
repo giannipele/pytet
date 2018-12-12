@@ -1,0 +1,10 @@
+(logistic,-74,9)
+[(),
+    [(paper0),(logistic,-73,9.5)
+        [(author_paper(author0,paper0)),
+            [(paper1),(identity)
+                [(paper_paper(paper1,paper0))]
+            ]
+        ]
+    ]
+]
