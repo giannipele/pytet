@@ -218,8 +218,44 @@ class RnnTet(NodeMixin):
                 eval_values.multisets = multisets
             return r
 
+class MultiPathTree(NodeMixin):
+    def __init__(self, parent=None):
+        self.parent = parent
+        self.value_path = []
 
-def loss(par, value, tet, evaluations=None):
-    return ((tet.forward_value(par, value, evaluations) - 1)**2)/2
+    def __str__(self):
+        """Default method of the anytree library to stringify the TET."""
+        render = ""
+        for pre, fill, node in RenderTree(self):
+            render = render +"{}{}\n".format(pre, node.value_path)
+        return render
+
+    def extract_value_path(self, ev, path=([],1)):
+        new_path = path[0].copy()
+        new_path.append(ev[0].top)
+        multiplicity = path[1]* ev[1]
+        self._add_path((new_path,multiplicity))
+        for i, m in enumerate(ev[0].multisets):
+            for v in m.elements:
+                self.children[i].extract_value_path(v, (new_path, multiplicity))
+
+    def _add_path(self, path):
+        present = False
+        for multipath in self.value_path:
+            if np.array_equal(multipath[0], path):
+                present = True
+                multipath[1] += path[1]
+                break
+        if not present:
+            self.value_path.append(path)
+
+    def instantiate_tree(self, tet):
+        self.name = tet.name
+        if tet.is_leaf:
+            return
+        for child in tet.children:
+            mp_child = MultiPathTree(parent=self)
+            mp_child.instantiate_tree(child)
+
 
 
