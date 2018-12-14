@@ -43,20 +43,6 @@ class RnnTet(NodeMixin):
             render = render +"{}{} {}\n".format(pre,binds, node.name)
         return render
 
-    def parse_tet_str(self, tetstr, parser='v'):
-        """Function that decide which parser to use for the
-           RnnTet string representation. Actual parser are
-           'v' = verbose
-           'c' = compact
-        """
-        if parser == 'v':
-            self.__parse_tet_verbose(tetstr)
-        elif parser == 'c':
-            self.__parse_tet_compact(tetstr)
-        else:
-            print("Unkown value for parser flag. Values are 'v' = verbose, 'c' = compact.")
-            return
-
     def __parse_tet_verbose(self, tetstr):
         """Parser for the verbose TET representation."""
         regex = re.compile(r'[\n\t\r]')
@@ -145,7 +131,6 @@ class RnnTet(NodeMixin):
             index += len(substr) + 2
         return True
 
-
     def __parse_activation_function(self,string):
         """Parse the string contatining the information of the
            node's activation function,and initialize node's
@@ -157,6 +142,20 @@ class RnnTet(NodeMixin):
             self.activation = Logistic(params)
         elif s_split[0] == 'identity':
             self.activation = Identity()
+
+    def parse_tet_str(self, tetstr, parser='v'):
+        """Function that decide which parser to use for the
+           RnnTet string representation. Actual parser are
+           'v' = verbose
+           'c' = compact
+        """
+        if parser == 'v':
+            self.__parse_tet_verbose(tetstr)
+        elif parser == 'c':
+            self.__parse_tet_compact(tetstr)
+        else:
+            print("Unkown value for parser flag. Values are 'v' = verbose, 'c' = compact.")
+            return
 
     def print_tet(self, indent=0):
         """Ad-Hoc indented printing method of the RnnTet.
@@ -218,10 +217,36 @@ class RnnTet(NodeMixin):
                 eval_values.multisets = multisets
             return r
 
+#    def forward_value_2(self, params, value):
+#        if self.is_leaf:
+#            r = self.activation.forward()
+#            return [r]
+#        else:
+#            multisets = []
+#            multisets_out = []
+#            for i, m in enumerate(value):
+#                child = self.children[i]
+#                multiset_out = []
+#                multisets.append([])
+#                for v in m:
+#                    f = child.forward_value_2(params[i+len(value)+1],
+#                        v[0])
+#                    multiset_out.append([f[0], v[1]])
+#                    multisets[i].append((f, v[1]))
+#                multisets_out.append(multiset_out)
+##            print(multisets_out)
+#            r = self.activation.forward(params, multisets_out)
+#            evaluation = [r]
+#            for _ in multisets:
+#                evaluation.append(_)
+#            return evaluation
+
+
 class MultiPathTree(NodeMixin):
     def __init__(self, parent=None):
         self.parent = parent
         self.value_path = []
+        self.name = ""
 
     def __str__(self):
         """Default method of the anytree library to stringify the TET."""
@@ -230,14 +255,14 @@ class MultiPathTree(NodeMixin):
             render = render +"{}{}\n".format(pre, node.value_path)
         return render
 
-    def extract_value_path(self, ev, path=([],1)):
+    def _extract_value_path(self, ev, path=([],1)):
         new_path = path[0].copy()
         new_path.append(ev[0].top)
         multiplicity = path[1]* ev[1]
         self._add_path((new_path,multiplicity))
         for i, m in enumerate(ev[0].multisets):
             for v in m.elements:
-                self.children[i].extract_value_path(v, (new_path, multiplicity))
+                self.children[i]._extract_value_path(v, (new_path, multiplicity))
 
     def _add_path(self, path):
         present = False
@@ -257,5 +282,9 @@ class MultiPathTree(NodeMixin):
             mp_child = MultiPathTree(parent=self)
             mp_child.instantiate_tree(child)
 
+    def compute_value_path(self, params, value, tet):
+        evaluations = TetValue()
+        tet.forward_value(params, value, evaluations)
+        self._extract_value_path((evaluations,1))
 
 

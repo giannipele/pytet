@@ -69,6 +69,17 @@ class TetValue:
                     v_array[i].append([v[0].arrayfy(), v[1]])
             return v_array
 
+#    def arrayfy_2(self):
+#        if len(self.multisets) == 0:
+#            return [np.float(1)]
+#        else:
+#            v_array = []
+#            for i, m in enumerate(self.multisets):
+#                v_array.append([])
+#                for v in m.elements:
+#                    v_array[i].append((v[0].arrayfy_2(), v[1]))
+#            return v_array
+
 class TetMultiset:
     """
     Multiset class contains the TetValues and their multiplcity.

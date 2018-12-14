@@ -1,10 +1,10 @@
 from autograd import grad
 from autograd.misc.optimizers import adam
 from sklearn.model_selection import train_test_split
-import autograd.numpy as np
 from value import TetValue
 
-class Learner():
+
+class Learner:
     def __init__(self, tet, loss, x, y):
         self.tet = tet
         self.x = x
@@ -12,6 +12,63 @@ class Learner():
         self.loss = loss
         self.best_params = []
         self.best_v_err = float("inf")
+        self.err = -1
+
+    def learn(self, **kwargs): 
+
+        params = self.tet.get_params()
+        optimizer = kwargs["optimizer"]
+
+        objective_grad = grad(self.calculate_loss_2, argnum=0)
+
+        self.X_train, self.X_val, self.y_train, self.y_val = train_test_split(self.x, self.y, test_size=0.01, random_state=42)
+        print("DATASET SIZE\tTrain set: {}\tValidation set: {}".format(len(self.X_train), len(self.X_val)))
+
+        if optimizer == "adam":
+            num_iters = kwargs["num_iters"]
+            step_size = kwargs["step_size"]
+            optimized_params = adam(objective_grad, params, step_size=step_size, num_iters=num_iters, callback=self.print_perf)
+            print("BEST VALIDATION ERROR: ", self.best_v_err)
+            print("BEST PARAMS: ", self.best_params)
+            return optimized_params
+
+    def calculate_loss(self, params, iteration):
+        ys_hat = []
+        evaluations = []
+        for tetvalue in self.X_train:
+            ev_tree = TetValue()
+            ys_hat.append(self.tet.forward_value(params, tetvalue, ev_tree))
+            evaluations.append(ev_tree)
+        err = self.loss.loss(ys_hat, self.y_train)
+        self.err = err
+        return err
+
+    def calculate_loss_2(self, params, iteration):
+        y_hat = []
+        evaluations = []
+        for tetvalue in self.X_train:
+            evaluation = self.tet.forward_value_2(params, tetvalue)
+            y_hat.append(evaluation[0])
+            evaluations.append(evaluation)
+        err = self.loss.loss(y_hat, self.y_train)
+        self.err = err
+        return err
+
+    def print_perf(self, params, it, gradient):
+        predictions = [self.tet.forward_value(params, tetvalue) for tetvalue in self.X_val]
+        err = self.loss.loss(predictions, self.y_val)
+        if err < self.best_v_err:
+            self.best_v_err = err
+            self.best_params = params
+        print("{}\t|\t{}\t|\t{}\t|\t{}\t|\t{}".format(it, self.err._value, err, params, gradient))
+
+
+class MetricLearner():
+    def __init__(self,tet, loss, x, y):
+        self.tet = tet
+        self.loss = loss
+        self.x = x
+        self.y = y
 
     def learn(self, **kwargs): 
 
@@ -43,7 +100,6 @@ class Learner():
         self.err = err
         return err
 
-
     def print_perf(self, params, it, gradient):
         predictions = [self.tet.forward_value(params, tetvalue) for tetvalue in self.X_val]
         err = self.loss.loss(predictions, self.y_val)
@@ -51,6 +107,3 @@ class Learner():
             self.best_v_err = err
             self.best_params = params
         print("{}\t|\t{}\t|\t{}\t|\t{}\t|\t{}".format(it, self.err._value, err, params, gradient))
-
-
-
