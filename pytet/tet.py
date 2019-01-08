@@ -1,9 +1,9 @@
 import autograd.numpy as np
 import re
 from anytree import NodeMixin, RenderTree
-from functions import Logistic, Identity
-from utils import tokens_substr
-from value import TetValue, TetMultiset
+from .functions import Logistic, Identity
+from .utils import tokens_substr
+from .value import TetValue, TetMultiset
 
 class RnnTet(NodeMixin):
     """

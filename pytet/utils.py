@@ -1,4 +1,4 @@
-from value import TetValue
+from .value import TetValue
 
 def tokens_substr(tetstr, tokens='{}'):
     """Return the substring between the two tokens. The function copies

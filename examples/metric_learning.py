@@ -1,12 +1,12 @@
 import sys
-from tet import RnnTet
-from learner import MetricLearner
-from utils import read_values_labels_files
+from pytet.tet import RnnTet
+from pytet.learner import MetricLearner
+from pytet.utils import read_values_labels_files
 import warnings
 warnings.filterwarnings("ignore")
 import time
-from functions import CrossEntropy, MeanSquaredError, EMDHinge
-from metric import TetMetric
+from pytet.functions import CrossEntropy, MeanSquaredError, EMDHinge
+from pytet.metric import TetMetric
 
 
 # Read the TET string from the file
@@ -41,7 +41,7 @@ start_time = time.time()
 # For now, only batch gradient descent is implemented.
 par = learner.learn(num_iters = 50, optimizer = 'adam', step_size = 0.5)
 exe_time = time.time() - start_time
-print("+++++++ Learning took {} minutes +++++++".format(int(exe_timei/60)))
+print("+++++++ Learning took {} minutes +++++++".format(int(exe_time/60)))
 
 
 print("\nOPTIMIZED PARAMETERS: ", par)

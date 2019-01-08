@@ -1,11 +1,11 @@
 import sys
-from tet import RnnTet
-from learner import Learner
-from utils import read_values_labels_files
+from pytet.tet import RnnTet
+from pytet.learner import Learner
+from pytet.utils import read_values_labels_files
 import warnings
 warnings.filterwarnings("ignore")
 import time
-from functions import CrossEntropy, MeanSquaredError
+from pytet.functions import CrossEntropy, MeanSquaredError
 
 # Read the TET string from the file
 #file = open('tet-quali.verbose', 'r')
@@ -23,9 +23,9 @@ print(tet)
 # Read the TET values and the labels from the files. values is a list of 
 # TETValues converted by the function .arrayfy(), which returns a list-of-lists
 # representation of the TETValue.
-train_values, train_labels = read_values_labels_files("../data/reduced/dataset.red.train", "../../data/reduced/labels.red.train")
+train_values, train_labels = read_values_labels_files("../data/reduced/dataset.red.train", "../data/reduced/labels.red.train")
 
-test_values, test_labels = read_values_labels_files("../data/reduced/dataset.red.test", "../../data/reduced/labels.red.test")
+test_values, test_labels = read_values_labels_files("../data/reduced/dataset.red.test", "../data/reduced/labels.red.test")
 
 # Initialize the learner with the TET, the values and the labels
 learner = Learner(tet, CrossEntropy(), train_values, train_labels)

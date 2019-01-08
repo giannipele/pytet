@@ -1,14 +1,14 @@
+from .value import TetValue
 from autograd import grad
 from autograd.misc.optimizers import adam
 from sklearn.model_selection import train_test_split
-from value import TetValue
 import autograd.numpy as np
 import random
 import itertools
 
 
 class Learner:
-    def __init__(self, tet, loss, x, y):
+    def __init__(self, tet, loss, X, y):
         self.tet = tet
         self.X = X
         self.y = y
@@ -47,7 +47,8 @@ class Learner:
         return err
 
     def print_perf(self, params, it, gradient):
-        predictions = [self.tet.forward_value(params, tetvalue) for tetvalue in self.X_val]
+        eval_value = TetValue()
+        predictions = [self.tet.forward_value(params, tetvalue, eval_value) for tetvalue in self.X_val]
         err = self.loss.loss(predictions, self.y_val)
         if err < self.best_v_err:
             self.best_v_err = err

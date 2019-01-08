@@ -1,6 +1,5 @@
+from .tet import MultiPathTree
 import autograd.numpy as np
-from tet import MultiPathTree
-
 
 class TetMetric:
     def _mpt_emd(self, mpt_1, mpt_2):
