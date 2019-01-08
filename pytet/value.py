@@ -1,5 +1,3 @@
-import autograd.numpy as np
-
 class TetValue:
     """
     Class that reoresents a TetValue, a nested multisets of multisets structure
@@ -32,6 +30,7 @@ class TetValue:
 
     def parse_value_str(self, valuestr, index=0):
         """Take in input a TetValue string, recursively generate the value."""
+        valuestr = valuestr.replace(' ','')
         try:
             if valuestr[index] == '(':
                 index += 1
@@ -69,16 +68,8 @@ class TetValue:
                     v_array[i].append([v[0].arrayfy(), v[1]])
             return v_array
 
-#    def arrayfy_2(self):
-#        if len(self.multisets) == 0:
-#            return [np.float(1)]
-#        else:
-#            v_array = []
-#            for i, m in enumerate(self.multisets):
-#                v_array.append([])
-#                for v in m.elements:
-#                    v_array[i].append((v[0].arrayfy_2(), v[1]))
-#            return v_array
+    def is_leaf(self):
+        return True if len(self.multisets)==0 else False
 
 class TetMultiset:
     """

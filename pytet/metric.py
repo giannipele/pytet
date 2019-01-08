@@ -1,18 +1,19 @@
 import autograd.numpy as np
-from scipy.stats import wasserstein_distance
 from tet import MultiPathTree
 
 
 class TetMetric:
     def _mpt_emd(self, mpt_1, mpt_2):
         if mpt_1.is_leaf and mpt_2.is_leaf:
+            #print("Leaf Node distance: ", self._mpn_emd(mpt_1.value_path, mpt_2.value_path))
             return self._mpn_emd(mpt_1.value_path, mpt_2.value_path)
         else:
             distance = 0
             for child_1, child_2 in zip(mpt_1.children, mpt_2.children):
-                distance = distance + (self._mpt_emd(child_1, child_2))
+                distance = distance + (1/len(mpt_1.children))*(self._mpt_emd(child_1, child_2))
 
             node_distance = self._mpn_emd(mpt_1.value_path, mpt_2.value_path)
+            #print("Node distance: ", node_distance)
             return node_distance + distance 
 
     def _mpn_emd(self, vp_1, vp_2):
@@ -25,7 +26,10 @@ class TetMetric:
         for i in range(len(vp_1[0][0])):
             v_1 = self._calculate_marginals(vp_1, i)
             v_2 = self._calculate_marginals(vp_2, i)
-            distance = distance + self._cdf(v_1, v_2)
+            cdf = self._cdf(v_1, v_2)
+            #print(cdf)
+            #print("CDF: ", cdf)
+            distance = distance + cdf
             #distance = distance + wasserstein_distance(np.asarray(v_1), np.asarray(v_2))
         return distance
 
@@ -55,7 +59,9 @@ class TetMetric:
         mpt_1.instantiate_tree(tet)
         mpt_2.instantiate_tree(tet)
         mpt_1.compute_value_path(params, value_1, tet)
+        #print(mpt_1)
         mpt_2.compute_value_path(params, value_2, tet)
+        #print(mpt_2)
         return self._mpt_emd(mpt_1, mpt_2)
 
 

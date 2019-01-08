@@ -1,6 +1,4 @@
-import autograd.numpy as np
-from fractions import Fraction
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 import autograd.numpy as np
 
 class Logistic():
@@ -41,7 +39,7 @@ class Identity():
         return "Identity"
 
 
-class LossFunction():
+class LossFunction:
     @abstractmethod
     def loss(self, y_hat, y):
         pass
@@ -64,3 +62,14 @@ class CrossEntropy(LossFunction):
         for y_h, y_t in zip(y_hat, y):
             num = num - ((y_t*np.log(y_h + eps) + (1-y_t)*np.log(1-y_h + eps)))
         return num/len(y_hat)
+
+class EMDHinge(LossFunction):
+    def __init__(self, delta):
+        self.delta = delta
+
+    def loss(self, y):
+        num = 0
+        for close_emd, far_emd in y:
+            #print(self.delta, far_emd, close_emd)
+            num = num + np.max([self.delta - (far_emd - close_emd), 0])
+        return num/len(y)

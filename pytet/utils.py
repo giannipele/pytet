@@ -46,7 +46,8 @@ def read_values_file(file_path):
         lines = reader.readlines()
         for line in lines:
             v = TetValue(line)
-            values.append(v.arrayfy())
+            #values.append(v.arrayfy())
+            values.append(v)
     return values
 
 def read_labels_file(file_path):

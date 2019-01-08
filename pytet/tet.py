@@ -185,61 +185,60 @@ class RnnTet(NodeMixin):
                 params.append(child.get_params())
             return params
 
-    def forward_value(self, params, value, eval_values=None):
-        if self.is_leaf:
-            r = self.activation.forward()
-            if eval_values is not None:
-                eval_values.top = r
-            return r
-        else:
-            multisets = []
-            multisets_out = []
-
-            for i, m in enumerate(value):
-                if eval_values is not None:
-                    multisets.append(TetMultiset())
-                child = self.children[i]
-                multiset_out = []
-
-                for v in m:
-                    if eval_values is not None:
-                        sub_value = TetValue()
-                        multiset_out.append([child.forward_value(params[i+len(value)+1],
-                            v[0], sub_value), v[1]])
-                        multisets[i].elements.append((sub_value, v[1]))
-                    else:
-                        multiset_out.append([child.forward_value(params[i+len(value)+1],
-                            v[0]), v[1]])
-                multisets_out.append(multiset_out)
-            r = self.activation.forward(params, multisets_out)
-            if eval_values is not None:
-                eval_values.top = r
-                eval_values.multisets = multisets
-            return r
-
-#    def forward_value_2(self, params, value):
+#    def forward_value(self, params, value, eval_values=None):
 #        if self.is_leaf:
 #            r = self.activation.forward()
-#            return [r]
+#            if eval_values is not None:
+#                eval_values.top = r
+#            return r
 #        else:
 #            multisets = []
 #            multisets_out = []
+#
 #            for i, m in enumerate(value):
+#                if eval_values is not None:
+#                    multisets.append(TetMultiset())
 #                child = self.children[i]
 #                multiset_out = []
-#                multisets.append([])
+#
 #                for v in m:
-#                    f = child.forward_value_2(params[i+len(value)+1],
-#                        v[0])
-#                    multiset_out.append([f[0], v[1]])
-#                    multisets[i].append((f, v[1]))
+#                    if eval_values is not None:
+#                        sub_value = TetValue()
+#                        multiset_out.append([child.forward_value(params[i+len(value)+1],
+#                            v[0], sub_value), v[1]])
+#                        multisets[i].elements.append((sub_value, v[1]))
+#                    else:
+#                        multiset_out.append([child.forward_value(params[i+len(value)+1],
+#                            v[0]), v[1]])
 #                multisets_out.append(multiset_out)
-##            print(multisets_out)
 #            r = self.activation.forward(params, multisets_out)
-#            evaluation = [r]
-#            for _ in multisets:
-#                evaluation.append(_)
-#            return evaluation
+#            if eval_values is not None:
+#                eval_values.top = r
+#                eval_values.multisets = multisets
+#            return r
+
+    def forward_value(self, params, value, eval_value):
+        if value.is_leaf():
+            res = self.activation.forward()
+            eval_value.top = res
+            return res
+        else:
+            eval_multisets = []
+            multisets_out = []
+
+            for i, m in enumerate(value.multisets):
+                eval_multisets.append(TetMultiset())
+                child = self.children[i]
+                offset =  i + len(value.multisets) + 1
+                multisets_out.append([])
+                for v in m.elements:
+                    sub_eval_value = TetValue()
+                    multisets_out[i].append((child.forward_value(params[offset], v[0], sub_eval_value), v[1]))
+                    eval_multisets[i].elements.append((sub_eval_value, v[1]))
+            res = self.activation.forward(params, multisets_out)
+            eval_value.top = res
+            eval_value.multisets = eval_multisets
+            return res
 
 
 class MultiPathTree(NodeMixin):
@@ -285,6 +284,7 @@ class MultiPathTree(NodeMixin):
     def compute_value_path(self, params, value, tet):
         evaluations = TetValue()
         tet.forward_value(params, value, evaluations)
+        #print ("EVALUATIONS: ", evaluations)
         self._extract_value_path((evaluations,1))
 
 
